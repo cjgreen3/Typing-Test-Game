@@ -1,32 +1,52 @@
-import {faker} from '@faker-js/faker';
-import RestartButton from './components/RestartButton';
-import Results from './components/Results';
+import React from "react";
+import GeneratedWords from "./components/GeneratedWord";
+import RestartButton from "./components/RestartButton";
+import Results from "./components/Results";
+import UserTypings from "./components/UserTypings";
+import useEngine from "./hooks/useEngine";
+import { calculateAccuracyPercentage } from "./utils/helpers";
 
-const words =faker.random.words(10)
-function App() {
+const App = () => {
+  const { words, typed, timeLeft, errors, state, restart, totalTyped } =
+    useEngine();
+
   return (
     <>
-    <CountdownTimer time={60} />
-    <GeneratedWords words={words} />
-    <RestartButton className={"mx-auto mt-10 text-slate-500"} onRestart={() => {}} />
-    <Results errors={3} accuracyPercentage={90} total={10} className={"mx-auto mt-10"} />
+      <CountdownTimer timeLeft={timeLeft} />
+      <WordsContainer>
+        <GeneratedWords key={words} words={words} />
+        {/* User typed characters will be overlayed over the generated words */}
+        <UserTypings
+          className="absolute inset-0"
+          words={words}
+          userInput={typed}
+        />
+      </WordsContainer>
+      <RestartButton
+        className={"mx-auto mt-10 text-slate-500"}
+        onRestart={restart}
+      />
+      <Results
+        className="mt-10"
+        state={state}
+        errors={errors}
+        accuracyPercentage={calculateAccuracyPercentage(errors, totalTyped)}
+        total={totalTyped}
+      />
     </>
   );
-}
-const GeneratedWords = ({words}: { words: string}) => {
+};
+
+const WordsContainer = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="text-4xl text-center text-slate-500">
-      {words}
+    <div className="relative text-3xl max-w-xl leading-relaxed break-all mt-3">
+      {children}
     </div>
   );
-}
+};
 
-const CountdownTimer = ({time}: { time: number }) => {
-  return (
-    <h3 className="text-5xl text-center text-primary-400 font-large">
-      Time: {time}
-    </h3>
-  );
-}
+const CountdownTimer = ({ timeLeft }: { timeLeft: number }) => {
+  return <h2 className="text-primary-400 font-medium">Time: {timeLeft}</h2>;
+};
 
 export default App;
